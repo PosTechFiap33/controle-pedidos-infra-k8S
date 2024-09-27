@@ -22,15 +22,6 @@ jobs:
         # terraform_version: 1.4.2
         cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
 
-    - name: Configure AWS credentials
-      env:
-        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      run: |
-        echo "Configuring AWS credentials"
-        # Opcional: defina a região padrão
-        export AWS_DEFAULT_REGION="us-east-1"
-
     - name: Terraform Format
       working-directory: ./terraform
       id: fmt
