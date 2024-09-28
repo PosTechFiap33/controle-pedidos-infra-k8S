@@ -25,7 +25,7 @@ terraform {
 }
 
 provider "aws" {
-  region = "us-east-1"
+  region = var.region
 }
 
 resource "aws_eks_cluster" "controle_pedidos_eks" {
