@@ -12,6 +12,9 @@ terraform {
       source  = "hashicorp/random"
       version = "3.4.3"
     }
+    helm = {
+      source = "hashicorp/helm"
+    }
   }
   required_version = ">= 1.1.0"
 
@@ -26,6 +29,12 @@ terraform {
 
 provider "aws" {
   region = var.region
+}
+
+provider "helm" {
+  kubernetes {
+    config_path = "~/.kube/config" # Ou outra configuração de kubeconfig
+  }
 }
 
 resource "aws_eks_cluster" "controle_pedidos_eks" {
@@ -59,4 +68,46 @@ resource "aws_eks_node_group" "controle_pedido_node_group" {
   depends_on = [
     aws_eks_cluster.controle_pedidos_eks
   ]
+}
+
+resource "helm_release" "controle_pedidos" {
+  name      = "controle-pedidos"
+  chart     = "./kubernetes/controlepedidos-chart"
+  namespace = "default"
+
+  set {
+    name  = "mercadoPagoIntegration.token"
+    value = var.mercado_pago_token
+  }
+
+  set {
+    name  = "mercadoPagoIntegration.urlWebhook"
+    value = var.mercado_pago_webhook
+  }
+
+  set {
+    name  = "userId"
+    value = var.mercado_pago_user_id
+  }
+
+  set {
+    name  = "externalPosId"
+    value = var.mercado_pago_external_pos_id
+  }
+
+  depends_on = [
+    aws_eks_node_group.controle_pedido_node_group
+  ]
+}
+
+resource "null_resource" "validate_helm_release" {
+  depends_on = [helm_release.controle_pedidos]
+
+  provisioner "local-exec" {
+    command = "kubectl get pods -n default -l app=controle-pedidos"
+  }
+}
+
+output "controle_pedidos_status" {
+  value = helm_release.controle_pedidos.status
 }
