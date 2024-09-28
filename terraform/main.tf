@@ -38,42 +38,19 @@ resource "aws_subnet" "eks_subnet" {
   availability_zone = "us-west-2a"
 }
 
-resource "aws_eks_cluster" "my_eks" {
+resource "aws_eks_cluster" "controle_pedidos_eks" {
   name     = "controle-pedidos-cluster"
-  role_arn = aws_iam_role.eks_role.arn
+  role_arn = "arn:aws:iam::752307938219:role/LabRole"
 
   vpc_config {
     subnet_ids = [aws_subnet.eks_subnet.id]
   }
 }
 
-resource "aws_iam_role" "eks_role" {
-  name = "eks-role"
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Action = "sts:AssumeRole"
-        Principal = {
-          Service = "eks.amazonaws.com"
-        }
-        Effect = "Allow"
-        Sid    = ""
-      },
-    ]
-  })
-}
-
-resource "aws_iam_role_policy_attachment" "eks_policy_attachment" {
-  role       = aws_iam_role.eks_role.name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
-}
-
-resource "aws_eks_node_group" "my_node_group" {
-  cluster_name    = aws_eks_cluster.my_eks.name
-  node_group_name = "my-node-group"
-  node_role_arn   = aws_iam_role.eks_node_role.arn
+resource "aws_eks_node_group" "controle_pedido_node_group" {
+  cluster_name    = aws_eks_cluster.controle_pedidos_eks.name
+  node_group_name = "controle-pedido-node-group"
+  node_role_arn   = "arn:aws:iam::752307938219:role/LabRole"
   subnet_ids      = [aws_subnet.eks_subnet.id]
 
   scaling_config {
@@ -81,37 +58,4 @@ resource "aws_eks_node_group" "my_node_group" {
     max_size     = 2
     min_size     = 1
   }
-}
-
-resource "aws_iam_role" "eks_node_role" {
-  name = "eks-node-role"
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Action = "sts:AssumeRole"
-        Principal = {
-          Service = "ec2.amazonaws.com"
-        }
-        Effect = "Allow"
-        Sid    = ""
-      },
-    ]
-  })
-}
-
-resource "aws_iam_role_policy_attachment" "node_policy_attachment" {
-  role       = aws_iam_role.eks_node_role.name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
-}
-
-resource "aws_iam_role_policy_attachment" "cni_policy_attachment" {
-  role       = aws_iam_role.eks_node_role.name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
-}
-
-resource "aws_iam_role_policy_attachment" "ecr_policy_attachment" {
-  role       = aws_iam_role.eks_node_role.name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
 }
