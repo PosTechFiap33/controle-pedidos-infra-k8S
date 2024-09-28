@@ -78,6 +78,11 @@ jobs:
       if: steps.plan.outcome == 'failure'
       run: exit 1
 
+    - name: Configure kubectl
+      if: steps.plan.outcome == 'failure'
+      run: |
+        aws eks --region us-east-1 update-kubeconfig --name controle-pedidos-cluster
+
     - name: Terraform Apply
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'
       working-directory: ./terraform
