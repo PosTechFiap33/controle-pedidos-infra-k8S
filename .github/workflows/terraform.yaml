@@ -108,7 +108,7 @@ jobs:
     - name: Deploy Kubernetes Resources
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'
       run: |
-        helm upgrade --install controle-pedidos ./kubernets/controlepedidos-chart --set database.deployment.volume.localPath="/Users/seu-usuario/banco-dados" --set mercadoPagoIntegration.token="Bearer TOKEN" --set mercadoPagoIntegration.urlWebhook="URL webhook" --set userId="" --set externalPosId=""
+        helm upgrade --install controle-pedidos ./kubernets/controlepedidos-chart --set database.deployment.volume.localPath="/Users/seu-usuario/banco-dados" --set mercadoPagoIntegration.token="${{secrets.MERCADO_PAGO_TOKEN}}" --set mercadoPagoIntegration.urlWebhook="URL webhook" --set userId="" --set externalPosId=""
 
 
     # - name: Deploy Kubernetes Resources
