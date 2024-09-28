@@ -79,7 +79,7 @@ jobs:
       run: exit 1
 
     - name: Configure kubectl
-      if: steps.plan.outcome == 'failure'
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
       run: |
         aws eks --region us-east-1 update-kubeconfig --name controle-pedidos-cluster
 
