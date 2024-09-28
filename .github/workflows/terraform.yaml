@@ -101,8 +101,18 @@ jobs:
       run: |
         aws eks --region us-east-1 update-kubeconfig --name controle-pedidos-cluster
 
+    - name: Install Helm
+      run: |
+        curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+
     - name: Deploy Kubernetes Resources
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'
       run: |
-        kubectl apply -f kubernets/deployment.yaml
-        kubectl apply -f kubernets/service.yaml
+        helm upgrade --install controle-pedidos ./kubernets/controlepedidos-chart --set database.deployment.volume.localPath="/Users/seu-usuario/banco-dados" --set mercadoPagoIntegration.token="Bearer TOKEN" --set mercadoPagoIntegration.urlWebhook="URL webhook" --set userId="" --set externalPosId=""
+
+
+    # - name: Deploy Kubernetes Resources
+    #   if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    #   run: |
+    #     kubectl apply -f kubernets/deployment.yaml
+    #     kubectl apply -f kubernets/service.yaml
