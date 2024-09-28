@@ -82,3 +82,19 @@ jobs:
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'
       working-directory: ./terraform
       run: terraform apply -auto-approve -input=false
+
+    - name: Install AWS CLI
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      run: |
+        sudo apt-get install -y awscli
+
+    - name: Configure kubectl
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      run: |
+        aws eks --region us-east-1 update-kubeconfig --name controle-pedidos-cluster
+
+    - name: Deploy Kubernetes Resources
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      run: |
+        kubectl apply -f kubernetes/deployment.yaml
+        kubectl apply -f kubernetes/service.yaml
