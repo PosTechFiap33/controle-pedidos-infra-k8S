@@ -59,7 +59,7 @@ resource "aws_eks_cluster" "controle_pedidos_eks" {
 resource "aws_eks_node_group" "controle_pedido_node_group" {
   cluster_name    = aws_eks_cluster.controle_pedidos_eks.name
   node_group_name = "controle-pedido-node-group"
-  node_role_arn   = "arn:aws:iam::752307938219:role/LabRole"
+  node_role_arn   = "arn:aws:iam::752307938219:role/aws-service-role/eks-nodegroup.amazonaws.com/AWSServiceRoleForAmazonEKSNodegroup"
   subnet_ids = [
     aws_subnet.eks_subnet_1.id,
     aws_subnet.eks_subnet_2.id
@@ -70,4 +70,8 @@ resource "aws_eks_node_group" "controle_pedido_node_group" {
     max_size     = 2
     min_size     = 1
   }
+
+  depends_on = [
+    aws_eks_cluster.controle_pedidos_eks
+  ]
 }
