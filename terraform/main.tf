@@ -28,56 +28,90 @@ provider "aws" {
   region = "us-east-1"
 }
 
-resource "random_pet" "sg" {}
-
-data "aws_ami" "ubuntu" {
-  most_recent = true
-
-  filter {
-    name   = "name"
-    values = ["ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*"]
-  }
-
-  filter {
-    name   = "virtualization-type"
-    values = ["hvm"]
-  }
-
-  owners = ["099720109477"] # Canonical
+resource "aws_vpc" "eks_vpc" {
+  cidr_block = "10.0.0.0/16"
 }
 
-resource "aws_instance" "web" {
-  ami                    = data.aws_ami.ubuntu.id
-  instance_type          = "t2.micro"
-  vpc_security_group_ids = [aws_security_group.web-sg.id]
-
-  user_data = <<-EOF
-              #!/bin/bash
-              apt-get update
-              apt-get install -y apache2
-              sed -i -e 's/80/8080/' /etc/apache2/ports.conf
-              echo "<style> body {background-color: black;}</style><img style="text-align:center" src="https://postech.fiap.com.br/gifs/loader.gif"><img src="https://postech.fiap.com.br/imgs/fiap-plus-alura/fiap_alura.png">" > /var/www/html/index.html
-              systemctl restart apache2
-              EOF
+resource "aws_subnet" "eks_subnet" {
+  vpc_id            = aws_vpc.eks_vpc.id
+  cidr_block        = "10.0.1.0/24"
+  availability_zone = "us-west-2a"
 }
 
-resource "aws_security_group" "web-sg" {
-  name = "${random_pet.sg.id}-sg"
-  ingress {
-    from_port   = 8080
-    to_port     = 8080
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-  // connectivity to ubuntu mirrors is required to run `apt-get update` and `apt-get install apache2`
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
+resource "aws_eks_cluster" "my_eks" {
+  name     = "controle-pedidos-cluster"
+  role_arn = aws_iam_role.eks_role.arn
+
+  vpc_config {
+    subnet_ids = [aws_subnet.eks_subnet.id]
   }
 }
 
-output "web-address" {
-  value = "${aws_instance.web.public_dns}:8080"
+resource "aws_iam_role" "eks_role" {
+  name = "eks-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Principal = {
+          Service = "eks.amazonaws.com"
+        }
+        Effect = "Allow"
+        Sid    = ""
+      },
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "eks_policy_attachment" {
+  role       = aws_iam_role.eks_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
+}
+
+resource "aws_eks_node_group" "my_node_group" {
+  cluster_name    = aws_eks_cluster.my_eks.name
+  node_group_name = "my-node-group"
+  node_role_arn   = aws_iam_role.eks_node_role.arn
+  subnet_ids      = [aws_subnet.eks_subnet.id]
+
+  scaling_config {
+    desired_size = 1
+    max_size     = 2
+    min_size     = 1
+  }
+}
+
+resource "aws_iam_role" "eks_node_role" {
+  name = "eks-node-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Principal = {
+          Service = "ec2.amazonaws.com"
+        }
+        Effect = "Allow"
+        Sid    = ""
+      },
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "node_policy_attachment" {
+  role       = aws_iam_role.eks_node_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
+}
+
+resource "aws_iam_role_policy_attachment" "cni_policy_attachment" {
+  role       = aws_iam_role.eks_node_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
+}
+
+resource "aws_iam_role_policy_attachment" "ecr_policy_attachment" {
+  role       = aws_iam_role.eks_node_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
 }
