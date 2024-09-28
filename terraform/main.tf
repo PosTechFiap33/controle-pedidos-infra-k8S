@@ -40,7 +40,8 @@ resource "aws_subnet" "eks_subnet" {
 
 resource "aws_eks_cluster" "controle_pedidos_eks" {
   name     = "controle-pedidos-cluster"
-  role_arn = aws_iam_role.eks_role.arn
+  role_arn = "arn:aws:iam::752307938219:role/LabRole"
+  #role_arn = aws_iam_role.eks_role.arn
 
   vpc_config {
     subnet_ids = [aws_subnet.eks_subnet.id]
@@ -70,11 +71,11 @@ resource "aws_eks_cluster" "controle_pedidos_eks" {
 #   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
 # }
 
-resource "aws_eks_node_group" "my_node_group" {
+resource "aws_eks_node_group" "controle_pedido_node_group" {
   cluster_name    = aws_eks_cluster.controle_pedidos_eks.name
-  node_group_name = "my-node-group"
- # node_role_arn   = aws_iam_role.eks_node_role.arn
+  node_group_name = "controle-pedido-node-group"
   node_role_arn   = "arn:aws:iam::752307938219:role/LabRole"
+# node_role_arn   = aws_iam_role.eks_node_role.arn
   subnet_ids      = [aws_subnet.eks_subnet.id]
 
   scaling_config {
