@@ -104,5 +104,5 @@ jobs:
     - name: Deploy Kubernetes Resources
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'
       run: |
-        kubectl apply -f kubernetes/deployment.yaml
-        kubectl apply -f kubernetes/service.yaml
+        kubectl apply -f kubernets/deployment.yaml
+        kubectl apply -f kubernets/service.yaml
