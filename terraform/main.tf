@@ -28,48 +28,33 @@ provider "aws" {
   region = "us-east-1"
 }
 
-resource "aws_vpc" "eks_vpc" {
-  cidr_block = "10.0.0.0/16"
-}
-
-resource "aws_subnet" "eks_subnet_1" {
-  vpc_id            = aws_vpc.eks_vpc.id
-  cidr_block        = "10.0.1.0/24"
-  availability_zone = "us-east-1a"
-}
-
-resource "aws_subnet" "eks_subnet_2" {
-  vpc_id            = aws_vpc.eks_vpc.id
-  cidr_block        = "10.0.2.0/24"
-  availability_zone = "us-east-1b"
-}
-
 resource "aws_eks_cluster" "controle_pedidos_eks" {
   name     = "controle-pedidos-cluster"
   role_arn = "arn:aws:iam::752307938219:role/LabRole"
 
   vpc_config {
-    subnet_ids = [
-      aws_subnet.eks_subnet_1.id,
-      aws_subnet.eks_subnet_2.id
-    ]
+    subnet_ids = var.subnets
   }
 }
 
 resource "aws_eks_node_group" "controle_pedido_node_group" {
   cluster_name    = aws_eks_cluster.controle_pedidos_eks.name
   node_group_name = "controle-pedido-node-group"
-  node_role_arn   = "arn:aws:iam::752307938219:role/aws-service-role/eks-nodegroup.amazonaws.com/AWSServiceRoleForAmazonEKSNodegroup"
-  subnet_ids = [
-    aws_subnet.eks_subnet_1.id,
-    aws_subnet.eks_subnet_2.id
-  ]
+  node_role_arn   = "arn:aws:iam::752307938219:role/LabRole"
+
+  subnet_ids = var.subnets
 
   scaling_config {
     desired_size = 1
-    max_size     = 2
+    max_size     = 1
     min_size     = 1
   }
+
+  update_config {
+    max_unavailable = 1
+  }
+
+  instance_types = ["t2.micro"]
 
   depends_on = [
     aws_eks_cluster.controle_pedidos_eks
