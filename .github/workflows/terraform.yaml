@@ -108,11 +108,11 @@ jobs:
     # - name: Deploy Kubernetes Resources
     #   if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     #   run: |
-    #     helm upgrade --install controle-pedidos ./kubernets/controlepedidos-chart  --set mercadoPagoIntegration.token="${{secrets.MERCADO_PAGO_TOKEN}}" --set mercadoPagoIntegration.urlWebhook="${{secrets.MERCADO_PAGO_WEBHOOK}}" --set userId="${{secrets.MERCADO_PAGO_USER_ID}}" --set externalPosId="${{secrets.MERCADO_PAGO_EXTERNAL_POS_ID}}"
+    #     helm upgrade --install controle-pedidos ./kubernetes/controlepedidos-chart  --set mercadoPagoIntegration.token="${{secrets.MERCADO_PAGO_TOKEN}}" --set mercadoPagoIntegration.urlWebhook="${{secrets.MERCADO_PAGO_WEBHOOK}}" --set userId="${{secrets.MERCADO_PAGO_USER_ID}}" --set externalPosId="${{secrets.MERCADO_PAGO_EXTERNAL_POS_ID}}"
 
 
     # - name: Deploy Kubernetes Resources
     #   if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     #   run: |
-    #     kubectl apply -f kubernets/deployment.yaml
-    #     kubectl apply -f kubernets/service.yaml
+    #     kubectl apply -f kubernetes/deployment.yaml
+    #     kubectl apply -f kubernetes/service.yaml
