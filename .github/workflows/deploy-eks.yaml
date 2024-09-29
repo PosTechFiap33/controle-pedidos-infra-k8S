@@ -1,4 +1,4 @@
-name: Deploy AWS Academy - EKS
+name: Deploy AWS - EKS
 
 on:
   push:
@@ -12,7 +12,7 @@ env:
 
 jobs:
   deploy:
-    name: Deploy AWS Academy
+    name: Deploy AWS
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
