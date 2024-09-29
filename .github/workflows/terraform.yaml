@@ -1,123 +1,53 @@
-name: "Terraform"
+name: Create Infra AWS
 
 on:
   push:
     branches:
-    - main
-  pull_request:
+    - feature/**
+
+env:
+  REGION_DEFAULT: us-east-1
 
 jobs:
-  terraform:
-    name: "Terraform"
+  create_infra:
+    name: terraform
     runs-on: ubuntu-latest
-    permissions:
-      pull-requests: write
+
     steps:
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v2
 
-    - name: Setup Terraform
-      uses: hashicorp/setup-terraform@v2
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
       with:
-        # terraform_version: 1.4.2
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ID }}
+        aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+        aws-region: ${{ env.REGION_DEFAULT }}
+
+    - name: Terraform Setup
+      uses: hashicorp/setup-terraform@v3
+      with:
         cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
 
     - name: Terraform Format
-      working-directory: ./terraform
       id: fmt
       run: terraform fmt -check
+      continue-on-error: true
 
     - name: Terraform Init
-      working-directory: ./terraform
       id: init
-      run: terraform init
+      run: terraform init -input=false
 
     - name: Terraform Validate
-      working-directory: ./terraform
       id: validate
       run: terraform validate -no-color
 
     - name: Terraform Plan
       id: plan
-      working-directory: ./terraform
-      if: github.event_name == 'pull_request'
-      run: terraform plan -no-color -input=false
+      run: terraform plan -out=tfplan -no-color -input=false
       continue-on-error: true
 
-    - name: Update Pull Request
-      uses: actions/github-script@v6
-      if: github.event_name == 'pull_request'
-      env:
-        PLAN: ${{ steps.plan.outputs.stdout }}
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        script: |
-          const output = `#### Terraform Format and Style 🖌\`${{ steps.fmt.outcome }}\`
-          #### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`
-          #### Terraform Validation 🤖\`${{ steps.validate.outcome }}\`
-          #### Terraform Plan 📖\`${{ steps.plan.outcome }}\`
-
-          <details><summary>Show Plan</summary>
-
-          \`\`\`terraform\n
-          ${process.env.PLAN}
-          \`\`\`
-
-          </details>
-
-          *Pushed by: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
-
-          github.rest.issues.createComment({
-            issue_number: context.issue.number,
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            body: output
-          })
-
-    - name: Terraform Plan Status
-      if: steps.plan.outcome == 'failure'
-      run: exit 1
-
-    - name: Configure kubectl
-      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-      run: |
-        aws eks --region us-east-1 update-kubeconfig --name controle-pedidos-cluster
-
     - name: Terraform Apply
-      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-      working-directory: ./terraform
-      run: terraform apply -auto-approve -input=false
-
-    # - name: Configure AWS Credentials
-    #   uses: aws-actions/configure-aws-credentials@v1
-    #   with:
-    #     aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-    #     aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-    #     aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
-    #     aws-region: ${{ secrets.AWS_REGION }}
-
-    # - name: Install AWS CLI
-    #   if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    #   run: |
-    #     sudo apt-get install -y awscli
-
-    # - name: Configure kubectl
-    #   if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    #   run: |
-    #     aws eks --region us-east-1 update-kubeconfig --name controle-pedidos-cluster
-
-    # - name: Install Helm
-    #   run: |
-    #     curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
-
-    # - name: Deploy Kubernetes Resources
-    #   if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    #   run: |
-    #     helm upgrade --install controle-pedidos ./kubernetes/controlepedidos-chart  --set mercadoPagoIntegration.token="${{secrets.MERCADO_PAGO_TOKEN}}" --set mercadoPagoIntegration.urlWebhook="${{secrets.MERCADO_PAGO_WEBHOOK}}" --set userId="${{secrets.MERCADO_PAGO_USER_ID}}" --set externalPosId="${{secrets.MERCADO_PAGO_EXTERNAL_POS_ID}}"
-
-
-    # - name: Deploy Kubernetes Resources
-    #   if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    #   run: |
-    #     kubectl apply -f kubernetes/deployment.yaml
-    #     kubectl apply -f kubernetes/service.yaml
+      id: apply
+      run: terraform apply -input=false -auto-approve

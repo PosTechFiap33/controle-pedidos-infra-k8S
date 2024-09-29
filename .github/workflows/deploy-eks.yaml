@@ -1,0 +1,46 @@
+name: Deploy AWS Academy - EKS
+
+on:
+  push:
+    branches:
+    - main
+    - develop
+
+env:
+  REGION_DEFAULT: "us-east-1"
+  CLUSTER_NAME: "controle-pedido-cluster"
+
+jobs:
+  deploy:
+    name: Deploy AWS Academy
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: AWS Configure
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ID }}
+        aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+        aws-region: ${{ env.REGION_DEFAULT }}
+
+    - name: Update Kube Config
+      run: aws eks update-kubeconfig --name ${{ env.CLUSTER_NAME }} --region ${{ env.REGION_DEFAULT }}
+
+    - name: Set Environment Variables
+      run: |
+        echo "DB_CONNECTION=${{ secrets.DB_CONNECTION }}" >> $GITHUB_ENV
+        echo "MERCADO_PAGO_URL_WEBHOOK=${{ secrets.MERCADO_PAGO_URL_WEBHOOK }}" >> $GITHUB_ENV
+        echo "MERCADO_PAGO_USERID=${{ secrets.MERCADO_PAGO_USERID }}" >> $GITHUB_ENV
+        echo "MERCADO_PAGO_POSID=${{ secrets.MERCADO_PAGO_POSID }}" >> $GITHUB_ENV
+        echo "MERCADO_PAGO_TOKEN=${{ secrets.MERCADO_PAGO_TOKEN }}" >> $GITHUB_ENV
+
+    - name: Kube Apply
+      run: |
+        kubectl apply -f k8s/metrics.yaml
+        envsubst < k8s/api-configmap.yaml | kubectl apply -f -
+        kubectl apply -f k8s/api-hpa.yaml
+        kubectl apply -f k8s/api-deployment.yaml
+        kubectl apply -f k8s/api-svc.yaml
