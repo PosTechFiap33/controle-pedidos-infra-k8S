@@ -36,7 +36,7 @@ jobs:
     - name: Deploy with Helm
       run: |
         helm upgrade --install controle-pedido ./k8s/controlepedidos-chart \
-          --set dbConnection="${{ secrets.DB_CONNECTION }}" \
+          --set api.configmap.database.value="${{ secrets.DB_CONNECTION }}" \
           --set mercadoPagoIntegration.urlWebhook="${{ secrets.MERCADO_PAGO_URL_WEBHOOK }}" \
           --set mercadoPagoIntegration.userId="${{ secrets.MERCADO_PAGO_USERID }}" \
           --set mercadoPagoIntegration.externalPosId="${{ secrets.MERCADO_PAGO_POSID }}" \
