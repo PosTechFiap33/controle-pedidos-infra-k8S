@@ -29,7 +29,17 @@ jobs:
     - name: Update Kube Config
       run: aws eks update-kubeconfig --name ${{ env.CLUSTER_NAME }} --region ${{ env.REGION_DEFAULT }}
 
+    - name: Set Environment Variables
+      run: |
+        export DB_CONNECTION="${{ secrets.DB_CONNECTION }}"
+        export MERCADO_PAGO_URL_WEBHOOK="${{ secrets.MERCADO_PAGO_URL_WEBHOOK }}"
+        export MERCADO_PAGO_USERID="${{ secrets.MERCADO_PAGO_USERID }}"
+        export MERCADO_PAGO_POSID="${{ secrets.MERCADO_PAGO_POSID }}"
+
     - name: Kube Apply
       run: |
-        kubectl apply -f k8s/eks-deployment.yaml
-        kubectl apply -f k8s/eks-svc.yaml
+        kubectl apply -f k8s/metrics.yaml
+        envsubst < k8s/api-configmap.yaml | kubectl apply -f -
+        kubectl apply -f k8s/api-hpa.yaml
+        kubectl apply -f k8s/api-deployment.yaml
+        kubectl apply -f k8s/api-svc.yaml
