@@ -35,6 +35,7 @@ jobs:
         echo "MERCADO_PAGO_URL_WEBHOOK=${{ secrets.MERCADO_PAGO_URL_WEBHOOK }}" >> $GITHUB_ENV
         echo "MERCADO_PAGO_USERID=${{ secrets.MERCADO_PAGO_USERID }}" >> $GITHUB_ENV
         echo "MERCADO_PAGO_POSID=${{ secrets.MERCADO_PAGO_POSID }}" >> $GITHUB_ENV
+        echo "MERCADO_PAGO_TOKEN=${{ secrets.MERCADO_PAGO_TOKEN }}" >> $GITHUB_ENV
 
     - name: Kube Apply
       run: |
