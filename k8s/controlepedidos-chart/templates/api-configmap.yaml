@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{.Values.api.configmap.name}}
+data:
+  DBConnection: {{.Values.api.configmap.database.value}}
+  MERCADO_PAGO_URL_WEBHOOK: "{{ .Values.mercadoPagoIntegration.urlWebhook }}"
+  MERCADO_PAGO_USERID: "{{ .Values.mercadoPagoIntegration.userId }}"
+  MERCADO_PAGO_POSID: "{{ .Values.mercadoPagoIntegration.externalPosId }}"
