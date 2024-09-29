@@ -15,7 +15,7 @@ variable "accessConfig" {
 }
 
 variable "nodeGroup" {
-  default = "fiap"
+  default = "controle-pedidos-ng"
 }
 
 variable "instanceType" {
