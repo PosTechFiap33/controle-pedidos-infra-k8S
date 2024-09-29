@@ -49,7 +49,7 @@ spec:
               key: DBConnection # Chave dentro do ConfigMap que contém a string de conexão
         - name: MERCADO_PAGO_TOKEN
           valueFrom:
-            secretKeyRef:
+            configMapKeyRef:
               name: controle-pedido-api-configmap # Nome do ConfigMap que contém a configuração
               key: MERCADO_PAGO_TOKEN
         - name: MERCADO_PAGO_URL_WEBHOOK
