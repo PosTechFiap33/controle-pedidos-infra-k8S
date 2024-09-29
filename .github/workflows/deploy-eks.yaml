@@ -40,4 +40,6 @@ jobs:
           --set mercadoPagoIntegration.urlWebhook="${{ secrets.MERCADO_PAGO_URL_WEBHOOK }}" \
           --set mercadoPagoIntegration.userId="${{ secrets.MERCADO_PAGO_USERID }}" \
           --set mercadoPagoIntegration.externalPosId="${{ secrets.MERCADO_PAGO_POSID }}" \
-          --set mercadoPagoIntegration.token="${{ secrets.MERCADO_PAGO_TOKEN }}"
+          --set mercadoPagoIntegration.token="${{ secrets.MERCADO_PAGO_TOKEN }}" \
+          --set "forceUpdate=$(date +%s)"
+
