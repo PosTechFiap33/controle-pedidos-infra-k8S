@@ -11,7 +11,7 @@ terraform {
     organization = "PosTechFiap33"
 
     workspaces {
-      name = "ControlePedido"
+      name = "ControlePedidoApi"
     }
   }
 }
