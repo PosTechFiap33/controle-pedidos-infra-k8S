@@ -31,7 +31,7 @@ jobs:
 
     - name: Set Environment Variables
       run: |
-        echo "DB_CONNECTION=${{ secrets.DB_CONNECTION }}" >> $GITHUB_ENV
+        echo "DB_CONNECTION=\"${{ secrets.DB_CONNECTION }}\"" >> $GITHUB_ENV
         echo "MERCADO_PAGO_URL_WEBHOOK=${{ secrets.MERCADO_PAGO_URL_WEBHOOK }}" >> $GITHUB_ENV
         echo "MERCADO_PAGO_USERID=${{ secrets.MERCADO_PAGO_USERID }}" >> $GITHUB_ENV
         echo "MERCADO_PAGO_POSID=${{ secrets.MERCADO_PAGO_POSID }}" >> $GITHUB_ENV
