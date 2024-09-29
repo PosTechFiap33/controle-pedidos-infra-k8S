@@ -1,4 +1,4 @@
-name: Deploy AWS Academy - EKS
+name: Deploy AWS - EKS
 
 on:
   push:
@@ -12,7 +12,7 @@ env:
 
 jobs:
   deploy:
-    name: Deploy AWS Academy
+    name: Deploy AWS
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
@@ -29,18 +29,15 @@ jobs:
     - name: Update Kube Config
       run: aws eks update-kubeconfig --name ${{ env.CLUSTER_NAME }} --region ${{ env.REGION_DEFAULT }}
 
-    - name: Set Environment Variables
+    - name: Install Helm
       run: |
-        echo "DB_CONNECTION=\"${{ secrets.DB_CONNECTION }}\"" >> $GITHUB_ENV
-        echo "MERCADO_PAGO_URL_WEBHOOK=${{ secrets.MERCADO_PAGO_URL_WEBHOOK }}" >> $GITHUB_ENV
-        echo "MERCADO_PAGO_USERID=${{ secrets.MERCADO_PAGO_USERID }}" >> $GITHUB_ENV
-        echo "MERCADO_PAGO_POSID=${{ secrets.MERCADO_PAGO_POSID }}" >> $GITHUB_ENV
-        echo "MERCADO_PAGO_TOKEN=${{ secrets.MERCADO_PAGO_TOKEN }}" >> $GITHUB_ENV
+        curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
 
-    - name: Kube Apply
+    - name: Deploy with Helm
       run: |
-        kubectl apply -f k8s/metrics.yaml
-        envsubst < k8s/api-configmap.yaml | kubectl apply -f -
-        kubectl apply -f k8s/api-hpa.yaml
-        kubectl apply -f k8s/api-deployment.yaml
-        kubectl apply -f k8s/api-svc.yaml
+        helm upgrade --install controle-pedido ./k8s/controlepedidos-chart \
+          --set dbConnection="${{ secrets.DB_CONNECTION }}" \
+          --set mercadoPagoIntegration.urlWebhook="${{ secrets.MERCADO_PAGO_URL_WEBHOOK }}" \
+          --set mercadoPagoIntegration.userId="${{ secrets.MERCADO_PAGO_USERID }}" \
+          --set mercadoPagoIntegration.externalPosId="${{ secrets.MERCADO_PAGO_POSID }}" \
+          --set mercadoPagoIntegration.token="${{ secrets.MERCADO_PAGO_TOKEN }}"
