@@ -19,7 +19,7 @@ api:
   configmap:
     name: controle-pedido-api-configmap
     database:
-      value: Host=controle-pedido-database-svc;Port=5432;Pooling=true;Database=SGP;User Id=postgres;
+      value: ""
   hpa:
     name: controlepedido-api-hpa
     minReplicas: 1
