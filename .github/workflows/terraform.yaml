@@ -1,9 +1,9 @@
 name: Create Infra AWS
 
 on:
-  push:
+  pull_request:
     branches:
-    - feature/**
+    - main
 
 env:
   REGION_DEFAULT: us-east-1
