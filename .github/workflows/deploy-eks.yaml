@@ -4,7 +4,6 @@ on:
   push:
     branches:
     - main
-    - develop
 
 env:
   REGION_DEFAULT: "us-east-1"
