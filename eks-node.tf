@@ -3,7 +3,7 @@ resource "aws_eks_node_group" "eks-node" {
   node_group_name = var.nodeGroup
   node_role_arn   = var.labRole
   subnet_ids      = [for subnet in data.aws_subnet.subnet : subnet.id if subnet.availability_zone != "${var.region}e"]
-  disk_size       = 50
+  disk_size       = 20
   instance_types  = [var.instanceType]
 
   scaling_config {
